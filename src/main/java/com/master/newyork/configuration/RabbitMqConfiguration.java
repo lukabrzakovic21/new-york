@@ -12,10 +12,7 @@ public class RabbitMqConfiguration {
     public static final String USER_STATUS_CHANGED = "user.status.changed";
 
     public static final String ITEM_AVAILABLE_AGAIN = "item.available.again";
-    public static final String ITEM_NO_LONGER_AVAILABLE = "item.no.longer.available.again";
-
-
-
+    public static final String ITEM_NO_LONGER_AVAILABLE = "item.no.longer.available";
 
     @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter() {

@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -23,6 +25,5 @@ import lombok.ToString;
 public class ItemAvailableAgain {
 
     private String item;
-    private String email;
-    private String number;
+    private List<String> emails;
 }

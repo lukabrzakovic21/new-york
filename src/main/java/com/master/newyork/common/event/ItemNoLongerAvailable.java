@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.Date;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,5 +24,4 @@ import java.util.Date;
 public class ItemNoLongerAvailable {
 
     private String item;
-    private String email;
 }

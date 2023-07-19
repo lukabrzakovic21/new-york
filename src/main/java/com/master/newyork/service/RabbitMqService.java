@@ -11,11 +11,11 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
+import static com.master.newyork.configuration.EmailConfiguration.CUSTOMER_GROUP_EMAIL;
 import static com.master.newyork.configuration.RabbitMqConfiguration.ITEM_AVAILABLE_AGAIN;
 import static com.master.newyork.configuration.RabbitMqConfiguration.ITEM_NO_LONGER_AVAILABLE;
 import static com.master.newyork.configuration.RabbitMqConfiguration.REGISTRATION_REQUEST_STATUS_CHANGED;
 import static com.master.newyork.configuration.RabbitMqConfiguration.USER_STATUS_CHANGED;
-
 
 @Component
 public class RabbitMqService {
@@ -73,15 +73,18 @@ public class RabbitMqService {
         logger.info("Consumed message from queue {} with body {}", ITEM_AVAILABLE_AGAIN, item);
         var text = new StringBuilder();
         text.append("Item ");
-        text.append(item.getItem() + " that you have requested is available again. Currently we have " + item.getNumber() + " pieces.");
+        text.append(item.getItem() + " that you have requested is available again. Go to our site and try to buy this item.");
         var subject = "Item  " + item.getItem() + " available again";
-        var email = EmailBuilder.builder()
-                .subject(subject)
-                .text(text.toString())
-                .to(item.getEmail())
-                .build();
-        emailService.sendSimpleMessage(email);
-        logger.info("Email sent to {}", item.getEmail());
+
+        item.getEmails().forEach(email -> {
+            var emailBuilder = EmailBuilder.builder()
+                    .subject(subject)
+                    .text(text.toString())
+                    .to(email)
+                    .build();
+            emailService.sendSimpleMessage(emailBuilder);
+        });
+        logger.info("Email sent to {}", item.getEmails());
 
     }
 
@@ -96,10 +99,10 @@ public class RabbitMqService {
         var email = EmailBuilder.builder()
                 .subject(subject)
                 .text(text.toString())
-                .to(item.getEmail())
+                .to(CUSTOMER_GROUP_EMAIL)
                 .build();
         emailService.sendSimpleMessage(email);
-        logger.info("Email sent to {}", item.getEmail());
+        logger.info("Email sent to {}", CUSTOMER_GROUP_EMAIL);
 
     }
 }

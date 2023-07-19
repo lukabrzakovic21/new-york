@@ -1,5 +1,6 @@
 package com.master.newyork.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,14 +13,32 @@ import java.util.Properties;
 @EnableConfigurationProperties
 public class EmailConfiguration {
 
+    public static final String CUSTOMER_GROUP_EMAIL = "lukawarior@gmail.com";
+    public static final String MAIL_SENDER = "lukabrzakovic21@gmail.com";
+
+    @Value("${spring.mail.host}")
+    private String host;
+
+    @Value("${spring.mail.port}")
+    private Integer port;
+
+    @Value("${spring.mail.username}")
+    private String username;
+
+    @Value("${spring.mail.password}")
+    private String password;
+
+
+
+
     @Bean
     public JavaMailSender getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
+        mailSender.setHost(host);
+        mailSender.setPort(port);
 
-        mailSender.setUsername("lukabrzakovic21@gmail.com");
-        mailSender.setPassword("tbtg lerp rsza uspc");
+        mailSender.setUsername(username);
+        mailSender.setPassword(password);
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
