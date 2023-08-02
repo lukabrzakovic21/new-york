@@ -5,6 +5,7 @@ import com.master.newyork.common.event.ItemAvailableAgain;
 import com.master.newyork.common.event.ItemNoLongerAvailable;
 import com.master.newyork.common.event.RegistrationRequestStatusChanged;
 import com.master.newyork.common.event.UserStatusChanged;
+import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -30,17 +31,17 @@ public class RabbitMqService {
     }
 
     @RabbitListener(queues = REGISTRATION_REQUEST_STATUS_CHANGED, messageConverter = "jsonMessageConverter")
-    public void consumeRegistrationRequestStatusChanged(RegistrationRequestStatusChanged registrationRequestStatusChanged) {
+    public void consumeRegistrationRequestStatusChanged(RegistrationRequestStatusChanged registrationRequestStatusChanged) throws MessagingException {
 
         logger.info("Consumed message from queue {} with body {}", REGISTRATION_REQUEST_STATUS_CHANGED, registrationRequestStatusChanged);
         var text = new StringBuilder();
         text.append("Dear ");
         text.append(registrationRequestStatusChanged.getFirstname() + " " + registrationRequestStatusChanged.getLastname() + ",");
-        text.append("your registration request has been " + registrationRequestStatusChanged.getStatus() + ".");
+        text.append(" your registration request has been " + registrationRequestStatusChanged.getStatus() + ".");
         var subject = "Registration request " + registrationRequestStatusChanged.getStatus();
         var email = EmailBuilder.builder()
                 .subject(subject)
-                .text(text.toString())
+                .text(emailService.composeEmail(text.toString()))
                 .to(registrationRequestStatusChanged.getEmail())
                 .build();
         emailService.sendSimpleMessage(email);
@@ -48,18 +49,18 @@ public class RabbitMqService {
     }
 
     @RabbitListener(queues = USER_STATUS_CHANGED, messageConverter = "jsonMessageConverter")
-    public void consumeUserStatusChanged(UserStatusChanged userStatusChanged) {
+    public void consumeUserStatusChanged(UserStatusChanged userStatusChanged) throws MessagingException {
 
         logger.info("Consumed message from queue {} with body {}", USER_STATUS_CHANGED, userStatusChanged);
 
         var text = new StringBuilder();
         text.append("Dear ");
         text.append(userStatusChanged.getFirstname() + " " + userStatusChanged.getLastname() + ",");
-        text.append("your account has been " + userStatusChanged.getStatus() + ".");
+        text.append(" your account has been " + userStatusChanged.getStatus() + ".");
         var subject = "User status changed to  " + userStatusChanged.getStatus();
         var email = EmailBuilder.builder()
                 .subject(subject)
-                .text(text.toString())
+                .text(emailService.composeEmail(text.toString()))
                 .to(userStatusChanged.getEmail())
                 .build();
         emailService.sendSimpleMessage(email);
@@ -74,31 +75,35 @@ public class RabbitMqService {
         var text = new StringBuilder();
         text.append("Item ");
         text.append(item.getItem() + " that you have requested is available again. Go to our site and try to buy this item.");
-        var subject = "Item  " + item.getItem() + " available again";
+        var subject = " Item  " + item.getItem() + " available again";
 
         item.getEmails().forEach(email -> {
             var emailBuilder = EmailBuilder.builder()
                     .subject(subject)
-                    .text(text.toString())
+                    .text(emailService.composeEmail(text.toString()))
                     .to(email)
                     .build();
-            emailService.sendSimpleMessage(emailBuilder);
+            try {
+                emailService.sendSimpleMessage(emailBuilder);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
         });
         logger.info("Email sent to {}", item.getEmails());
 
     }
 
     @RabbitListener(queues = ITEM_NO_LONGER_AVAILABLE, messageConverter = "jsonMessageConverter")
-    public void consumeItemNoLongerAvailable(ItemNoLongerAvailable item) {
+    public void consumeItemNoLongerAvailable(ItemNoLongerAvailable item) throws MessagingException {
 
         logger.info("Consumed message from queue {} with body {}", ITEM_NO_LONGER_AVAILABLE, item);
         var text = new StringBuilder();
         text.append("Item ");
         text.append(item.getItem() + " is no longer available.");
-        var subject = "Item  " + item.getItem() + " no longer available.";
+        var subject = " Item  " + item.getItem() + " no longer available.";
         var email = EmailBuilder.builder()
                 .subject(subject)
-                .text(text.toString())
+                .text(emailService.composeEmail(text.toString()))
                 .to(CUSTOMER_GROUP_EMAIL)
                 .build();
         emailService.sendSimpleMessage(email);
